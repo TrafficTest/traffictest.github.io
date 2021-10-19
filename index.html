@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Жолооны Тест</title>
+	<style>
+		* { font-family: Arial, Helvetica, sans-serif; }
+		body { background-color: #efefef; }
+		#bigTitle, #title { width: 500px; }
+		#sel {
+			width: 400px;
+			display: flex;
+			justify-content: center;
+		}
+		#sel div { width: 50px; }
+		div { margin-top: 5px; }
+		.mark {
+			position: fixed;
+			width: 15px;
+		}
+		.par {
+			width: 500px;
+			display: flex;
+			flex-direction: row;
+			flex-wrap: nowrap;
+			justify-content: space-between;
+		}
+	</style>
+</head>
+<body>
+	<center>
+		<div>
+			<div>
+				<select id="bigTitle" onchange="BigTitle()">
+					<option value=0>ЕРӨНХИЙ ТЕСТ</option>
+					<option value=1>НЭМЭЛТ ТЕСТ</option>
+					<option value=2>ШАЛГАЛТ</option>
+				</select>
+			</div>
+			<div>
+				<select id="title" onchange="Title()">
+				</select>
+			</div>
+			<div class="par">
+				<label id="cnt">0 / 20</label>
+				<label id="info"></label>
+				<div><label id = "correct">0</label><label class="mark">✓</label></div>
+			</div>
+			<div class="par">
+				<label id="num">№ 1</label>
+				<label id="time"></label>
+				<div><label id = "wrong">0</label><label class="mark">✗</label></div>
+			</div>
+		</div>
+		<div><canvas id="myCanvas" width="500" height="290"></canvas></div>
+		<div class="par">
+			<button type="button" onclick="UpdData(-1)">Өмнөх</button>
+			<form id = "sel">
+				<div><input type="radio" name="sel" onchange="Select(0)"><label>1</label><label class="mark"></label></div>
+				<div><input type="radio" name="sel" onchange="Select(1)"><label>2</label><label class="mark"></label></div>
+				<div><input type="radio" name="sel" onchange="Select(2)"><label>3</label><label class="mark"></label></div>
+				<div><input type="radio" name="sel" onchange="Select(3)"><label>4</label><label class="mark"></label></div>
+				<div><input type="radio" name="sel" onchange="Select(4)"><label>5</label><label class="mark"></label></div>
+			</form>
+			<button type="button" onclick="UpdData(1)">Дараах</button>
+		</div>
+	</center>
+
+<script>
+	var cntStr = "5333535333542333433443334444333333343433443433433333224333323243332232333422343334233333333233333223334254232532233333432342332232532324544242442443233423333445333342444254322533233333444233354455555533332332232322333332333322333332332233335433533333223332323333225345534445332333342333243344422323333343342422333443444442222224332333322343222322332232232423354433352233525233333222442253222223232223442222224223233322233355252442422335232222223333233223433242332354223333323233334434344444434434232333325422232324323322323323234333323423442334445433323423243344433345334333323233334233322343333332323233533242222224222332423222242222333334442334342333332233334343443344332333232232333333333444333433344234343344333334344433442442333344435344354443434233334543444343444443534455544333433324424334334433354553444343232333534442243522232233335453235333333343443334443344434443334443222323333433443333344534444334333435332333343323233344343242323223435332533535334434333433233444234433444454334344334233",
+		correctStr = "4122511121441211321322331321221222322431441412333311114221313243122231312321223113112123131212131112133242231231111321111311321212221221341122332431112321223411231331443242211431111312414133341233455232121112131112211231213112132122311121132332131223212332213231223113214144331131132111231323312322131112342422331341213442211213132313111343121212111231212213113131121213423221313112231132222112111222312112112122213311231233111442311122111211222213112111411221322154122312211212313332342432412314111232213111122311212312223212131231313322312122135223211123223341232335314123121123233222222242322222122121532231111223112131323121122212132131412312341112332113312312141212312113131112123112132344132412323124331342231224133122311231122313134313352342413212234332441133431342334224533212321313324122332412351433123213132222321322213421222121214111234312213211311221211333413321341123212211232313431313313433233334322433111221131121211231242121312112321221132513221414231323211441134323334434122344213121",
+		titles = [[
+			"Нэр томьёо ба тодорхойлолт",
+			"Механикжсан тээврийн хэрэгслийн ангилал",
+			"Жолоочийн үүрэг",
+			"Тусгай дуут болон гэрлэн дохио ажиллуулсан тээврийн хэрэгслийн хөдөлгөөн",
+			"Замын тэмдэг",
+			"Замын тэмдэглэл",
+			"Замын хөдөлгөөн зохицуулах дохио",
+			"Анхааруулах дохио ба таних тэмдэг",
+			"Хөдөлгөөн эхлэх болон чиг өөрчлөх",
+			"Тээврийн хэрэгсэл байрлан явах",
+			"Тээврийн хэрэгслийн хурд",
+			"Тээврийн хэрэгсэл ба гүйцэх",
+			"Түр ба удаан зогсох",
+			"Уулзвар нэвтрэх",
+			"Явган хүний гарц нэвтрэх",
+			"Төмөр замын гарам нэвтрэх",
+			"Гадна талын гэрэлтүүлэх хэрэгслийг хэрэглэх",
+			"Хорооллын доторх хөдөлгөөн",
+			"Тууш замын хөдөлгөөн",
+			"Механикжсан тээврийн хэрэгслийг чирэх",
+			"Хүн ба ачаа тээвэрлэх",
+			"Тээврийн хэрэгслийн эвдрэл, гэмтэл, техникийн зөрчил",
+			"Тээврийн хэрэгслийг аюулгүй жолоодох онол",
+			"Эмнэлгийн анхны тусламж"
+		], [
+			"Нэр томьёо ба тодорхойлолт",
+			"Механикжсан тээврийн хэрэгслийн ангилал",
+			"Замын тэмдэг ба тэмдэглэл",
+			"Анхааруулах дохио ба таних тэмдэг",
+			"Тээврийн хэрэгсэл байрлан явах",
+			"Тээврийн хэрэгслийн хурд",
+			"Түр ба удаан зогсох",
+			"Төмөр замын гарам нэвтрэх",
+			"Механикжсан тээврийн хэрэгслийг чирэх",
+			"Хүн тээвэрлэх",
+			"Ачаа тээвэрлэх",
+			"Тээврийн хэрэгслийн эвдрэл, гэмтэл, техникийн зөрчил",
+			"Тээврийн хэрэгслийг аюулгүй жолоодох онол"
+		], [
+			"ЕРӨНХИЙ ТЕСТИЙН ШАЛГАЛТ",
+			"НЭМЭЛТ ТЕСТИЙН ШАЛГАЛТ"
+		]],
+		imgs = [
+			"1A0VVrjkxSMPpxvZGjNiaXTncDqlPP4ed",
+			"10J664RKpwFWTjz-niHzKOTGSua8mwfVF",
+			"1-_PdJOZoZlQBDm64vX0517HnWStmx6gD",
+			"16wFAxDDPzFgKaKc-EkC0k4hcWcgt6FMW",
+			"1SRDC3z1ZEuIL3Oh7lhLVy5-FBTqTaBgi",
+			"1bHKsA0gIw2GselqkUg80aReGRfEQzdOT",
+			"1UA_3pIjBrMMMRgOY319mBGyokOZdVKE_",
+			"1Tx_1QYgnXm18JeQH0l0WrOUz7F5P3MHW",
+			"1GWK8zigWgUgQPEnjPQknf4TSOeQU65GR",
+			"1cab295TUj4WxooNCBq8MLWVENdTIQLdA",
+			"1BzQnT7mpoG8t4JbHOvBpXTSm5xUT5ZxC",
+			"1zsAMDPXd8JKPKSN1eyiubRoMu35WOAje",
+			"1yL2-D3oai7bWzt7UvtzBGrhNOrkFWrNx",
+			"1tcbYX1OqPIq3SuguB5CiwahJlBhg6TfZ",
+			"1llJz7y8-9ys5kSk8AZSaor8yCzXsUktL",
+			"1c0SoMtlttFaCPUC-lqzVWFvt7q72mFiW",
+			"1vHUG_y1YchmaLvqNSZEZBlk9-_86x-RS",
+			"1CG7lJpU1Zo1xft-wuLib74efQRqECpz6",
+			"1W84lKJIdHPHIudU_UUbvTJyWfik1fXwI",
+			"1VRGapFQx-SCsqUrO2NhYt8AjnDeyvo79",
+			"1T-yc8XJJQ_5aKP5BFgsNoAZafCzFrdKV",
+			"16sdMipQi2K9RvQsL-P7KHPEOk57OnS18",
+			"1rJV8cKCMExt6eFVzNP09-lDcMsLQ1YMy",
+			"1EKLmFxA6AI56z3Xsmf2HKElzUlprbaXd",
+			"1b08qtNRZE5UZ6a4DS0vVWE-5G6Oir3nH",
+			"1VIYP4hZYOSaspy69DZPK6o1xWPzRsaJO",
+			"1Xjun9NwhEAvTsluQ72GE8jmOmxPz2FKT",
+			"1hMZL3Tk86lHea8Sd9R_3pHOqUoOxMQ9R",
+			"1Ip6vvv3cCkG8mNV4hQzKk4JWElnDDDcg",
+			"1sGuYtJK7ljFp4RVr1S6eGyByKVZGn8WP",
+			"1dInlJUOhHuSpj95l2CDLwWq_lVuNG8EU",
+			"1geS9D5yrJwPOZG21cIzyaWpmhDimRVc1",
+			"1TQkZFFTS9by_S-sxtXDNwHljKKZhj5h0",
+			"18KTob9iNvqh_R7a7DWUjlXBpYcVJnMa4",
+			"17mxZXEZwMLnKd2CrEmXNQ_RUdHcPsCyJ",
+			"1C-21kLJxP1IFnQc5dsm5zhaOeiszCIU5",
+			"1zBmql7es6F8ul1z1XW_w8pno18_DVvuF",
+			"1i7Iw7sMvz9wP4s-h4SyaQkQGvhZzqaPQ",
+			"1nggBrnYcXhAWQl6Lc9vuxexh9X_od2z8",
+			"1EquSPvUg6LGqFB-QVwtWW9zwXppYz37U",
+			"18dRq6iwrEuWSO2-WGu7Es_u7gIypr9uv",
+			"1T14aF62MRN7Pq6jD5ZJcpP8LiZrTYUu-",
+			"1wZmMOLfYlV5KVchuuuOQDRorf_KHtitX",
+			"1xbYq_DhF1DOCq_RUyXLQsj2gWFb7xM6o",
+			"1IxIpWQJkIEVL7xtJNAkvMRABwg5VN-pn",
+			"1RUdIOLW5xj3g2Qzp7HtOORmsJQyzvkXo",
+			"1AFrJp-vOL2rVT-eMwIx8Lyl5TWSgZwyk",
+			"1gvYuD8GFMePUbuhZ8IFHhFu7jNQWSuTG",
+			"1zUpdrBH1S5DngMAIdKGBreXSLIgDkjTO",
+			"11KtYtvA7Go591zCYmkpSka2dcO2cocHq",
+			"1dYgklFwIMwCGERNFzwLnvpRXc6fIXaet",
+			"10VZ_AXL9vw6gMaJ9Q9wediQ3bLwE5EnW",
+			"1jQgIYpUZb2KXY83SJ7W7AKtXX66H66RO",
+			"1gPUhSD2ZZgM8riTnuYzeU9y41l7pv-fO",
+			"1tlCsd82_F9jccPTR4CjdqL8UFNZO24NH",
+			"15ILXLdqh7g8Ki73tRZKUGG_ZhxOrdb5g",
+			"1aV9ja6g_rBhck2B2HqHYM5IWrZO4mSQC",
+			"1aEF2KqUjuxvCKqmnLVeM7_Tgwd7kEaKe",
+			"1HSb_4k1Na90HDDQs0sguaotHm-8r0hGq",
+			"1D8xjbRTBg-6YYRqbOxZgm7eqyjfv9j1A",
+			"10FEv4A_QL6H6xvzWMFSEhgvcIcKlLCiA",
+			"1g6u3KvPu3Q_d35xdXTCelSm2lGEjGWra",
+			"1PiaDqZIrUZMOA7yklU82RBb7BmTCXJ2O",
+			"1skfWwFtVESgunjm8U07xKUK50DQ58VJk",
+			"1CWOnUyH-4qiFung1ngyRyyVumlJIf59_",
+			"1FTa87dR408J4_vRxkOWZfMx_6GDT3gbF",
+			"1wQ6POkSGP8ET7lkF8Uq7K30i_HpAoTp0",
+			"1OG7BtpdQpIVdVmythGSXYld2Yz6fG1J1",
+			"1uX7-6-qOECc1Do8x1yhgcnH4d88hscD8",
+			"1H9xXXeqvWFifjLKVF0ZzPSGet4x49Wdj",
+			"1DVdC9pzolRUCIly2NkukRuWnqaiNxCaY",
+			"1YwwkXtYo80sabgaOCv8j20Kpo6_30XQi",
+			"1xg2ypoDg9gM39aAMlMVr9TmK8oHcmCNX",
+			"1ABaDDvCFaDMaQe30GQnj_3wB95hwqN42",
+			"1o2IycgE2VcsF2lPt2eO39DaX76jny6sC",
+			"1mCWY1ODH5AxxFRAFugS0jF7sh1L1p8uo",
+			"1e03nJp7QRulz70VJnQEUiFoOqOXR5By7",
+			"1EqVqnLNjkhSFFWQjR2-DOiy23Fye_QLu",
+			"1-45SrYUkWW2LsDOrULAYpLssCdt27Knu",
+			"1NTmfNrEiE_-PuFhLZBPNBou-ecv41EHX",
+			"1eV_SXTY_aQfgxr16B2uJG0y4BNC7liJd",
+			"1OI9h8p63UQJGUrGbVLVYey0v2JMNzc1z",
+			"1dhIy7_lKsUxaBpF2_3eT1P6uaVT6wy4X",
+			"1HbA6Py0qveOjEm9DKkSw5m7ZsvtHTDRJ",
+			"1Gk7vyeABRMauxr7637P30ry573HEcBs6",
+			"1C2m86XM7-0wYiVVU-Mv2C2DTQF1RTl99",
+			"1yVnfgGcshA91b9NxM0GD5YFS-YJqxheh",
+			"14MkFhktTZ1Y3rYaO0gSGjzWToBXejpcJ",
+			"1aU9zQLqkbkKZeziWqSWtmIG-Y1DEV-HS",
+			"1So-6bsBMlHAVKs8XV4afHXI0lsRrokcc",
+			"1gVtNGxXKP85UAdtE333kgGTXOWEnEFPU",
+			"1G1Xm6owbnTSCP88pmSOSwL5ZcD6j6oPU",
+			"10gs11tzAhVYu_Qi-CpayeCfU42qqvwpn",
+			"1-lW4Squ7mgwbevB39apge9Yhx5TIidE6",
+			"1czbh6AcQafa7ycbdtzAmMgYcYfY1zv88",
+			"17U0TbAqiZqTbFbNLbGqe6gDNHf8xOBcx",
+			"1_u63_1oFCY_sflodRLkaHBvnmlaL3k7_",
+			"1fOxLMzZBeeycWr1GyXuL5VC_liD8jIZS",
+			"1QIgn8RU-L7S2cUUHHUBBjp2qPGOArHGg",
+			"1L9wrJBClLV2IunUhY82WmZMgwqHIZyFl",
+		],
+		cnts = [
+			[20, 20, 30, 10, 120, 40, 40, 40, 80, 80, 20, 20, 80, 70, 10, 20, 10, 10, 10, 10, 20, 20, 10, 10],
+			[10, 10, 40, 20, 20, 10, 10, 10, 10, 20, 20, 10, 10],
+			[20, 20],
+		],
+		p = [39, 68, 80], sz = [561, 325], d = [550, 316],
+			bigTitleDrp = Id("bigTitle"), titleDrp = Id("title"), cntTxt = Id("cnt"), numTxt = Id("num"), infoTxt = Id("info"), timeTxt = Id("time"), correctTxt = Id("correct"), wrongTxt = Id("wrong"), toggles = Id("sel"),
+			ctx = Id("myCanvas").getContext("2d"), isExam = false, exam = [], vals = [],
+	    	cnt = 0, correctCnt = 0, n = 0, t, maxTime = 1200;
+	BigTitle();
+	function Id(eId) { return document.getElementById(eId); }
+	function Active(eId, active) { eId.style.display = active ? "block" : "none"; }
+	function RandomRange(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+	function Char2Int(c) { return c.charCodeAt(0) - 49; }
+	setInterval(function() {
+		if (isExam) {
+			if (--t <= 0) {
+				isExam = false;
+				UpdInfo();
+				t = -1;
+			}
+			ShowTime();
+		}
+	}, 1000);
+	function ShowTime() { timeTxt.innerHTML = (t / 60 < 10 ? "0" : "") + Math.floor(t / 60) + ":" + (t % 60 < 10 ? "0" : "") + (t % 60); }
+	function BigTitle() {
+		titleDrp.innerHTML = "";
+		for (var i = 0; i < titles[bigTitleDrp.value].length; i++)
+			titleDrp.innerHTML += "<option value=" + i + ">" + (i + 1) + ". " + titles[bigTitleDrp.value][i] + "</option>";
+		Title();
+	}
+	function Title() {
+		exam = [];
+		vals = new Array(cnts[bigTitleDrp.value][titleDrp.value]).fill(-1);
+		isExam = bigTitleDrp.value == 2;
+		Active(timeTxt, isExam);
+		cnt = correctCnt = n = 0;
+		if (isExam) {
+			for (var i = 0, j = titleDrp.value * 800, k = titleDrp.value == 0 ? 40 : 10; i < cnts[bigTitleDrp.value][titleDrp.value]; i++)
+				exam[i] = RandomRange(j + i * k, j + i * k + k);
+			t = maxTime;
+			ShowTime();
+		} else {
+			for (var i = 0, j = bigTitleDrp.value * 800 + cnts[bigTitleDrp.value].slice(0, titleDrp.value).reduce((a, b) => a + b, 0); i < cnts[bigTitleDrp.value][titleDrp.value]; i++)
+				exam[i] = j + i;
+		}
+		UpdData();
+	}
+	function UpdData(dn = 0) {
+		n = (n + dn + exam.length) % exam.length;
+		var img = new Image(sz[0], sz[1]);
+		img.src = "https://drive.google.com/uc?export=view&id=" + imgs[Math.floor(exam[n] / 10)];
+		// img.src = "test/" + Math.floor(exam[n] / 10 + 1) + ".jpg";
+		img.onload = function() { ctx.drawImage(img, (Math.floor(exam[n] / 10) % 2 == 0 ? p[0] : p[2]) + exam[n] % 2 * d[0], p[1] + Math.floor(exam[n] % 10 / 2) * d[1], sz[0], sz[1], 0, 0, 500, 290); };
+		for (var i = 0; i < toggles.children.length; i++) {
+			Active(toggles.children[i], i <= Char2Int(cntStr[exam[n]]));
+			toggles.children[i].children[0].checked = false;
+			toggles.children[i].children[2].innerHTML = "";
+		}
+		UpdInfo();
+		ShowSelect();
+	}
+	function UpdInfo() {
+		cntTxt.innerHTML = "" + cnt + " / " + exam.length;
+		numTxt.innerHTML = "№ " + (n + 1);
+		if (t >= 0)
+			infoTxt.innerHTML = bigTitleDrp.value == 2 ? (isExam ? "" : "Дууссан (") + (correctCnt >= 18 ? "Тэнцсэн" : (cnt - correctCnt) >= 3 || !isExam ? "Тэнцээгүй" : "") + (isExam ? "" : ")") : cnt == exam.length ? "Дууссан" : "";
+		correctTxt.innerHTML = "" + correctCnt;
+		wrongTxt.innerHTML = "" + (cnt - correctCnt);
+	}
+    function Select(i) {
+        if (vals[n] < 0) {
+			vals[n] = i;
+			if (++cnt == exam.length)
+				isExam = false;
+			if (i == Char2Int(correctStr[exam[n]]))
+				correctCnt++;
+			UpdInfo();
+			ShowSelect();
+        } else
+			toggles.children[vals[n]].children[0].checked = true;
+    }
+    function ShowSelect() {
+		if (vals[n] >= 0) {
+			toggles.children[vals[n]].children[0].checked = true;
+			toggles.children[Char2Int(correctStr[exam[n]])].children[2].innerHTML = "✓";
+			if (vals[n] != Char2Int(correctStr[exam[n]]))
+				toggles.children[vals[n]].children[2].innerHTML = "✗";
+		}
+    }
+</script>
